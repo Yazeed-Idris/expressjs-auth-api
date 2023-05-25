@@ -8,7 +8,7 @@ function generateAccessToken(username) {
 
 
 
-router.post('/createUser', (req, res, next) => {
+router.post('/generateToken', (req, res, next) => {
     const username = req.body.username
     const token = generateAccessToken({username})
     res.json(token)

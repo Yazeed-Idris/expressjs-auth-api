@@ -1,5 +1,7 @@
 let express = require('express')
 let path = require('path')
+let bcrypt = require('bcrypt')
+const saltRounds = 10
 let dotenv = require('dotenv')
 let app = express()
 app.use(express.json())
@@ -14,22 +16,30 @@ app.post('/createUser', (req, res, next) => {
     const password = req.body.password?? null;
     const email = req.body.email?? null;
 
-    let hashedPassword = 3
+    let hashedPassword;
 
-    insertUser(db, {
-        username: username,
-        email: email,
-        password: password,
-    }).then((data) => {
-        if (data === 0) {
+    bcrypt
+        .hash(password, saltRounds)
+        .then(hash => {
+            hashedPassword = hash
+
+            insertUser(db, {
+                username: username,
+                email: email,
+                password: hashedPassword,
+            }).then((data) => {
+                if (data === 0) {
+                    res.send('Success')
+
+                    return;
+                }
+                res.send(`Error: ${data}`)
+            })
+        })
 
 
 
-            next()
-            return;
-        }
-        res.send(`Error: ${data}`)
-    })
+
 
 
 })
