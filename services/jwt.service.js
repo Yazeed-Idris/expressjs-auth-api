@@ -1,19 +1,9 @@
-let express = require('express')
-let router = express.Router()
 let jwt = require('jsonwebtoken')
 
 function generateAccessToken(username) {
     return jwt.sign(username, process.env.TOKEN_SECRET, {expiresIn: '60s'});
 }
 
-
-
-router.post('/generateToken', (req, res, next) => {
-    const username = req.body.username
-    const token = generateAccessToken({username})
-    res.json(token)
-    next()
-})
 
 function authenticateToken(req, res, next) {
     const authHeader = req.headers['authorization']
@@ -33,7 +23,6 @@ function authenticateToken(req, res, next) {
 }
 
 module.exports = {
-    router,
     authenticateToken,
     generateAccessToken
 }

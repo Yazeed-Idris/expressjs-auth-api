@@ -1,5 +1,4 @@
 let express = require('express')
-let path = require('path')
 let bcrypt = require('bcrypt')
 const saltRounds = 10
 let dotenv = require('dotenv')
@@ -7,8 +6,8 @@ let app = express()
 app.use(express.json())
 dotenv.config()
 
-let {db, insertUser, getUser} = require('./database.service')
-let {router:jwtRouter, authenticateToken, generateAccessToken} = require('./jwt.service')
+let {db, insertUser, getUser} = require('./services/database.service')
+let {authenticateToken, generateAccessToken} = require('./services/jwt.service')
 
 async function createNewUser(username, password, email) {
     // hashing password
@@ -85,11 +84,10 @@ app.post('/verifyUser', async (req, res, next) => {
             next()
             break
         }
-        default: next()
+        default: next(new Error('Something Wrong'))
+
     }
 })
-
-app.use(jwtRouter)
 
 app.listen(3000, () => {
     console.log('listening on port 3000')

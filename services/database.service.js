@@ -17,8 +17,6 @@ async function insertUser(db, {username, email, password}) {
         password: password,
     }
 
-    console.log('inserting...', username, email, password)
-
     const result = new Promise((resolve, reject) => {
         db.none('insert into credentials(username, email, password) values(${username}, ${email}, ${password})', userObj)
             .then((data) => {
@@ -36,10 +34,7 @@ async function insertUser(db, {username, email, password}) {
 
 
 async function getUser(db, username) {
-    const user = await db.one('select * from credentials where username = $1', username).then((user) => {
-        return user;
-    })
-    return user;
+    return await db.one('select * from credentials where username = $1', username);
 }
 
 module.exports = {db, insertUser, getUser};
