@@ -16,18 +16,21 @@ async function insertUser(db, {username, email, password}) {
         email: email,
         password: password,
     }
-    const result = await db.none('insert into credentials(username, email, password) values(${username}, ${email}, ${password})', userObj)
-        .then((data) => {
-            return 0;
-        })
-        .catch((err) => {
-            if (err['code'] === '23505') {
-                console.log('user already exists please use other credentials')
-                return err['code'];
-            }
-            console.log('error:', err['detail'])
-            return -1
-        })
+
+    console.log('inserting...', username, email, password)
+
+    const result = new Promise((resolve, reject) => {
+        db.none('insert into credentials(username, email, password) values(${username}, ${email}, ${password})', userObj)
+            .then((data) => {
+               resolve({message: 'success', data})
+            })
+            .catch((err) => {
+                if (err['code'] === '23505') {
+                    console.log('user already exists please use other credentials')
+                }
+                reject({message: err['detail'], code: err['code']})
+            })
+    })
     return result;
 }
 

@@ -10,39 +10,68 @@ dotenv.config()
 let {db, insertUser, getUser} = require('./database.service')
 let {router:jwtRouter, authenticateToken, generateAccessToken} = require('./jwt.service')
 
-app.post('/createUser', (req, res, next) => {
-
-    const username = req.body.username?? null;
-    const password = req.body.password?? null;
-    const email = req.body.email?? null;
-
-    let hashedPassword;
-
-    bcrypt
-        .hash(password, saltRounds)
+async function createNewUser(username, password, email) {
+    // hashing password
+    let hashedPassword = await bcrypt.hash(password, saltRounds)
         .then(hash => {
-            hashedPassword = hash
+        return hash;
 
-            insertUser(db, {
-                username: username,
-                email: email,
-                password: hashedPassword,
-            }).then((data) => {
-                if (data === 0) {
-                    res.send('Success')
+        })
 
-                    return;
-                }
-                res.send(`Error: ${data}`)
-            })
+    // attempting to create user
+    return await insertUser(db, {username, email, password: hashedPassword})
+        .then((value) => {
+        return value    // succeeded to create user
+    })
+        .catch((err) => {
+            throw new Error(err.message)    // failed to create user
+        })
+}
+
+async function verifyUser(username, password) {
+    const user= await getUser(db, username)
+        .then(user => {
+            return user
+        })
+        .catch((err) => {
+            throw new Error(err.message)
+        })
+    const verified = await bcrypt.compare(password, user.password)
+        .then(result => {
+            return result;
         })
 
 
 
 
 
+}
+
+app.post('/createUser', (req, res, next) => {
+
+    const username = req.body.username?? null;
+    const password = req.body.password?? null;
+    const email = req.body.email?? null;
+
+    createNewUser(username, password, email)
+        .then((value) => {
+            console.log('value:', value)
+            next()
+        })
+        .catch((err) => {
+           next(err)
+        })
+
 
 })
+
+app.post('/verifyUser', (req, res, next) => {
+    const username = req.body.username?? null;
+    const password = req.body.password?? null
+    verifyUser(username, password)
+    next()
+})
+
 app.use(jwtRouter)
 
 app.listen(3000, () => {
