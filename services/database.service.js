@@ -37,4 +37,8 @@ async function getUser(db, username) {
     return await db.one('select * from credentials where username = $1', username);
 }
 
-module.exports = {db, insertUser, getUser};
+async function getUserData(db, username) {
+    return await db.one('select username, email from credentials where username = $1', username)
+}
+
+module.exports = {db, insertUser, getUser, getUserData};

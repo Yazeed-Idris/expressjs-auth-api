@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "author": "Yazeed Idris",
   "scripts": {
-    "start:dev": "node app.js"
+    "dev": "nodemon app.js",
+    "start": "node app.js"
   },
   "dependencies": {
     "bcrypt": "^5.1.0",

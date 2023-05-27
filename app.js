@@ -6,7 +6,7 @@ let app = express()
 app.use(express.json())
 dotenv.config()
 
-let {db, insertUser, getUser} = require('./services/database.service')
+let {db, insertUser, getUser, getUserData} = require('./services/database.service')
 let {authenticateToken, generateAccessToken} = require('./services/jwt.service')
 
 async function createNewUser(username, password, email) {
@@ -69,24 +69,19 @@ app.post('/verifyUser', async (req, res, next) => {
     const username = req.body.username?? null;
     const password = req.body.password?? null
 
-    switch (req.body.verificationMethod) {
-        case 'password': {
-            verifyUserPassword(username, password)
-                .then((token) => {
-                    res.send(token)
-                })
-                .catch((err) => {
-                    next(err)
-                })
-            break
-        }
-        case 'jwt': {
-            next()
-            break
-        }
-        default: next(new Error('Something Wrong'))
+    await verifyUserPassword(username, password)
+        .then((token) => {
+            res.send(token)
+        })
+        .catch((err) => {
+            next(err)
+        })
 
-    }
+})
+
+app.get('/userData', authenticateToken, async (req, res, next) => {
+    const user = await getUserData(db, req.body.username)
+    res.send(user)
 })
 
 app.listen(3000, () => {
