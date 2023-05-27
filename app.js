@@ -28,7 +28,7 @@ async function createNewUser(username, password, email) {
         })
 }
 
-async function verifyUser(username, password) {
+async function verifyUserPassword(username, password) {
     const user= await getUser(db, username)
         .then(user => {
             return user
@@ -41,8 +41,9 @@ async function verifyUser(username, password) {
             return result;
         })
 
+    if (!verified) throw new Error('password incorrect')
 
-
+    return generateAccessToken({username});
 
 
 }
@@ -65,11 +66,27 @@ app.post('/createUser', (req, res, next) => {
 
 })
 
-app.post('/verifyUser', (req, res, next) => {
+app.post('/verifyUser', async (req, res, next) => {
     const username = req.body.username?? null;
     const password = req.body.password?? null
-    verifyUser(username, password)
-    next()
+
+    switch (req.body.verificationMethod) {
+        case 'password': {
+            verifyUserPassword(username, password)
+                .then((token) => {
+                    res.send(token)
+                })
+                .catch((err) => {
+                    next(err)
+                })
+            break
+        }
+        case 'jwt': {
+            next()
+            break
+        }
+        default: next()
+    }
 })
 
 app.use(jwtRouter)
